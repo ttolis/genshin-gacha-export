@@ -315,7 +315,18 @@ if __name__ == "__main__":
             game_path = res.group() if res else None
             assert game_path, "未找到游戏路径"
 
-            data_2 = Path(game_path) / "webCaches/Cache/Cache_Data/data_2"
+            webCaches_dir = Path(game_path) / "webCaches/"
+            data_2s = []
+            data_2s.append(Path(game_path) / "webCaches/Cache/Cache_Data/data_2")
+            for f in os.listdir(webCaches_dir):
+                data_2 = os.path.join(webCaches_dir, f)
+                data_2 = Path(data_2) / "Cache/Cache_Data/data_2"
+                if os.path.isfile(data_2):
+                    data_2s.append(data_2)
+            logger.debug(f"缓存文件列表 {data_2s}")
+            data_2s.sort(key=lambda fn: os.path.getmtime(fn))
+            data_2 = data_2s[-1]
+##            data_2 = Path(game_path) / "webCaches/Cache/Cache_Data/data_2"
             assert data_2.is_file(), "缓存文件不存在"
             logger.info(f"缓存文件 {data_2}")
 
@@ -330,10 +341,12 @@ if __name__ == "__main__":
             results = [get_url_from_string(result) for result in results]
             results = [result for result in results if result]
 
+##            if results:
+##                timestamp_list = [safe_int(url_query_dict(result).get("timestamp", 0)) for result in results]
+##                max_timestamp_index = timestamp_list.index(max(timestamp_list))
+##                url = results[max_timestamp_index]
             if results:
-                timestamp_list = [safe_int(url_query_dict(result).get("timestamp", 0)) for result in results]
-                max_timestamp_index = timestamp_list.index(max(timestamp_list))
-                url = results[max_timestamp_index]
+                url = results[-1]
 
             if gge_tmp.is_file():
                 gge_tmp.unlink()
